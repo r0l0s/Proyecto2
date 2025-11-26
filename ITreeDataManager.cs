@@ -1,4 +1,4 @@
-﻿namespace Proyecto.FamilyTree
+﻿namespace Proyecto.FamilyTreeSpace
 {
     public interface ITreeDataManager
     {

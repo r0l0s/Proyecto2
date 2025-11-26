@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Proyecto.FamilyTree
+namespace Proyecto.FamilyTreeSpace
 {
     internal sealed class FamilyTreeNode
     {
         internal Person Data { get; }
-        internal FamilyTreeNode Mother { get; private set; }
-        internal FamilyTreeNode Father { get; private set; }
+
+        internal FamilyTreeNode? Mother { get; private set; }
+        internal FamilyTreeNode? Father { get; private set; }
 
         private readonly List<FamilyTreeNode> _children = new();
         private readonly List<FamilyTreeNode> _spouses = new();
@@ -16,16 +17,17 @@ namespace Proyecto.FamilyTree
         internal IReadOnlyList<FamilyTreeNode> Children => _children.AsReadOnly();
         internal IReadOnlyList<FamilyTreeNode> Spouses => _spouses.AsReadOnly();
 
-        internal FamilyTreeNode(Person person)
+        internal FamilyTreeNode(Person data)
         {
-            Data = person ?? throw new ArgumentNullException(nameof(person));
+            Data = data ?? throw new ArgumentNullException(nameof(data));
         }
 
         internal void SetMother(FamilyTreeNode mother)
         {
             if (mother == null) return;
-            if (ReferenceEquals(mother, this)) throw new InvalidOperationException();
-            if (CreatesCycle(mother)) throw new InvalidOperationException();
+            if (ReferenceEquals(mother, this)) throw new InvalidOperationException("Un nodo no puede ser su propia madre.");
+            if (CreatesCycle(mother)) throw new InvalidOperationException("Se generaría un ciclo en el árbol.");
+
             Mother = mother;
             if (!mother._children.Contains(this)) mother._children.Add(this);
         }
@@ -33,86 +35,87 @@ namespace Proyecto.FamilyTree
         internal void SetFather(FamilyTreeNode father)
         {
             if (father == null) return;
-            if (ReferenceEquals(father, this)) throw new InvalidOperationException();
-            if (CreatesCycle(father)) throw new InvalidOperationException();
+            if (ReferenceEquals(father, this)) throw new InvalidOperationException("Un nodo no puede ser su propio padre.");
+            if (CreatesCycle(father)) throw new InvalidOperationException("Se generaría un ciclo en el árbol.");
+
             Father = father;
             if (!father._children.Contains(this)) father._children.Add(this);
+        }
+
+        internal void AddChild(FamilyTreeNode child)
+        {
+            if (child == null) return;
+            if (!_children.Contains(child)) _children.Add(child);
         }
 
         internal void AddSpouse(FamilyTreeNode spouse)
         {
             if (spouse == null) return;
-            if (ReferenceEquals(spouse, this)) throw new InvalidOperationException();
             if (!_spouses.Contains(spouse)) _spouses.Add(spouse);
             if (!spouse._spouses.Contains(this)) spouse._spouses.Add(this);
         }
 
-        internal bool RemoveSpouse(FamilyTreeNode spouse)
+        internal IEnumerable<FamilyTreeNode> TraverseAll(HashSet<FamilyTreeNode> visited)
         {
-            if (spouse == null) return false;
-            bool removed = _spouses.Remove(spouse);
-            if (removed) spouse._spouses.Remove(this);
-            return removed;
-        }
+            if (!visited.Add(this))
+                yield break;
 
-        internal FamilyTreeNode FindNode(string id)
-        {
-            if (Data.ID == id) return this;
+            yield return this;
+
+            if (Mother != null)
+                foreach (var m in Mother.TraverseAll(visited))
+                    yield return m;
+
+            if (Father != null)
+                foreach (var f in Father.TraverseAll(visited))
+                    yield return f;
 
             foreach (var c in _children)
-            {
-                var f = c.FindNode(id);
-                if (f != null) return f;
-            }
+                foreach (var child in c.TraverseAll(visited))
+                    yield return child;
 
             foreach (var s in _spouses)
-            {
-                if (s.Data.ID == id) return s;
-            }
-
-            return null;
+                foreach (var sp in s.TraverseAll(visited))
+                    yield return sp;
         }
 
-        internal IEnumerable<FamilyTreeNode> GetAllNodes()
+       private bool CreatesCycle(FamilyTreeNode candidate)
         {
-            var visited = new HashSet<FamilyTreeNode>();
-            return Traverse(this, visited);
+
+            return HasPathChildrenOnly(candidate, this, new HashSet<FamilyTreeNode>());
         }
 
-        private IEnumerable<FamilyTreeNode> Traverse(FamilyTreeNode node, HashSet<FamilyTreeNode> visited)
-        {
-            if (!visited.Add(node)) yield break;
-
-            yield return node;
-
-            if (node.Mother != null) foreach (var x in Traverse(node.Mother, visited)) yield return x;
-            if (node.Father != null) foreach (var x in Traverse(node.Father, visited)) yield return x;
-
-            foreach (var c in node._children)
-                foreach (var x in Traverse(c, visited))
-                    yield return x;
-
-            foreach (var s in node._spouses)
-                foreach (var x in Traverse(s, visited))
-                    yield return x;
-        }
-
-        private bool CreatesCycle(FamilyTreeNode candidate)
-        {
-            var visited = new HashSet<FamilyTreeNode>();
-            return HasPath(candidate, this, visited);
-        }
-
-        private bool HasPath(FamilyTreeNode start, FamilyTreeNode target, HashSet<FamilyTreeNode> visited)
+        private bool HasPathChildrenOnly(FamilyTreeNode? start, FamilyTreeNode target, HashSet<FamilyTreeNode> visited)
         {
             if (start == null) return false;
             if (ReferenceEquals(start, target)) return true;
             if (!visited.Add(start)) return false;
 
-            return HasPath(start.Mother, target, visited)
-                || HasPath(start.Father, target, visited)
-                || start._children.Any(c => HasPath(c, target, visited));
+            foreach (var c in start._children)
+                if (HasPathChildrenOnly(c, target, visited)) return true;
+
+            return false;
+        }
+
+
+
+        private bool HasPath(FamilyTreeNode? start, FamilyTreeNode target, HashSet<FamilyTreeNode> visited)
+        {
+            if (start == null) return false;
+            if (ReferenceEquals(start, target)) return true;
+            if (!visited.Add(start)) return false;
+
+            if (HasPath(start.Mother, target, visited)) return true;
+            if (HasPath(start.Father, target, visited)) return true;
+
+            foreach (var c in start._children)
+                if (HasPath(c, target, visited)) return true;
+
+            // ❌ NO incluir esposos aquí
+            // foreach (var s in start._spouses)
+            //     if (HasPath(s, target, visited)) return true;
+
+            return false;
         }
     }
 }
-

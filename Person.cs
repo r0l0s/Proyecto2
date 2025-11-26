@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Proyecto.FamilyTree
+namespace Proyecto.FamilyTreeSpace
 {
     public sealed class Person
     {

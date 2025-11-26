@@ -18,6 +18,31 @@ namespace Proyecto.FamilyTreeSpace
 
             return _index[id];
         }
+        public Person? GetMother(string id)
+        {
+            if (_index.TryGetValue(id, out var node) && node.Mother != null)
+                return node.Mother.Data;
+            return null;
+        }
+
+        public Person? GetFather(string id)
+        {
+            if (_index.TryGetValue(id, out var node) && node.Father != null)
+                return node.Father.Data;
+            return null;
+        }
+
+        public List<Person> GetChildren(string id)
+        {
+            if (!_index.TryGetValue(id, out var node)) return new List<Person>();
+            return node.Children.Select(c => c.Data).ToList();
+        }
+
+        public List<Person> GetSpouses(string id)
+        {
+            if (!_index.TryGetValue(id, out var node)) return new List<Person>();
+            return node.Spouses.Select(s => s.Data).ToList();
+        }
 
         private bool AgeOK(Person parent, Person child)
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Proyecto.FamilyTreeSpace
+namespace Proyecto2.FamilyTreeSpace
 {
     public sealed class FileTreeDataManager : ITreeDataManager
     {

@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BmNqJB4yBB0=",
+  "dgSpecHash": "kSmMfjnhC44=",
   "success": true,
-  "projectFilePath": "C:\\Users\\alexa\\OneDrive\\Documentos\\TEC\\Proyecto2\\proyecto2.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\alexa\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.22\\microsoft.netcore.app.ref.8.0.22.nupkg.sha512",
-    "C:\\Users\\alexa\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.22\\microsoft.windowsdesktop.app.ref.8.0.22.nupkg.sha512",
-    "C:\\Users\\alexa\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.22\\microsoft.aspnetcore.app.ref.8.0.22.nupkg.sha512",
-    "C:\\Users\\alexa\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.22\\microsoft.netcore.app.host.win-x64.8.0.22.nupkg.sha512"
-  ],
+  "projectFilePath": "C:\\Users\\Sebastián G\\OneDrive\\Documentos\\TEC\\IIS 2025\\Proyecto2\\Proyecto2.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }

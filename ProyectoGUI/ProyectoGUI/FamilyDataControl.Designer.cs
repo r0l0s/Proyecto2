@@ -108,7 +108,7 @@
             Controls.Add(RemoveFamilyButton);
             Controls.Add(AvailableFamiliesList);
             Name = "FamilyDataControl";
-            Size = new Size(1000, 700);
+            Size = new Size(1000, 660);
             ResumeLayout(false);
             PerformLayout();
         }

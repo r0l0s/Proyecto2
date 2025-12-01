@@ -28,22 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
-            familyDataControl1 = new FamilyDataControl();
+            memberManagerControl1 = new MemberManagerControl();
             SuspendLayout();
             // 
-            // familyDataControl1
+            // memberManagerControl1
             // 
-            familyDataControl1.Location = new Point(252, 9);
-            familyDataControl1.Name = "familyDataControl1";
-            familyDataControl1.Size = new Size(1000, 660);
-            familyDataControl1.TabIndex = 0;
+            memberManagerControl1.Location = new Point(252, 12);
+            memberManagerControl1.Name = "memberManagerControl1";
+            memberManagerControl1.Size = new Size(1000, 660);
+            memberManagerControl1.TabIndex = 0;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 681);
-            Controls.Add(familyDataControl1);
+            Controls.Add(memberManagerControl1);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ProyectoFamilia";
@@ -52,6 +52,6 @@
 
         #endregion
 
-        private FamilyDataControl familyDataControl1;
+        private MemberManagerControl memberManagerControl1;
     }
 }

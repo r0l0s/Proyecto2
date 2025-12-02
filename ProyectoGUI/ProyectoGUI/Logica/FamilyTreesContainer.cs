@@ -4,8 +4,9 @@ using System.Text;
 
 namespace ProyectoGUI.Logica
 {
-    struct FamilyTreeContainer
+    static class FamilyTreeContainer
     {
         public static List<FamilyTree> Families = new List<FamilyTree>();
+
     }
 }

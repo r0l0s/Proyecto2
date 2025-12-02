@@ -28,30 +28,41 @@
         /// </summary>
         private void InitializeComponent()
         {
-            memberManagerControl1 = new MemberManagerControl();
+            DynamicPanel = new Panel();
+            NavigationPanel = new Panel();
             SuspendLayout();
             // 
-            // memberManagerControl1
+            // DynamicPanel
             // 
-            memberManagerControl1.Location = new Point(252, 12);
-            memberManagerControl1.Name = "memberManagerControl1";
-            memberManagerControl1.Size = new Size(1000, 660);
-            memberManagerControl1.TabIndex = 0;
+            DynamicPanel.Location = new Point(252, 12);
+            DynamicPanel.Name = "DynamicPanel";
+            DynamicPanel.Size = new Size(1000, 657);
+            DynamicPanel.TabIndex = 0;
+            // 
+            // NavigationPanel
+            // 
+            NavigationPanel.Location = new Point(12, 12);
+            NavigationPanel.Name = "NavigationPanel";
+            NavigationPanel.Size = new Size(234, 657);
+            NavigationPanel.TabIndex = 1;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 681);
-            Controls.Add(memberManagerControl1);
+            Controls.Add(NavigationPanel);
+            Controls.Add(DynamicPanel);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ProyectoFamilia";
+            Load += MainForm_Load;
             ResumeLayout(false);
         }
 
         #endregion
 
-        private MemberManagerControl memberManagerControl1;
+        private Panel DynamicPanel;
+        private Panel NavigationPanel;
     }
 }

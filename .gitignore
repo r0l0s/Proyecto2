@@ -1,0 +1,41 @@
+# Build outputs
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+TestResults/
+*.log
+
+# IDE and solution settings
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Publish / packaging artifacts
+[Dd]ebug/
+[Rr]elease/
+publish/
+artifacts/
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Code analysis
+_ReSharper*/
+*.DotSettings.user
+StyleCopReport.xml
+
+# OS files
+[Tt]humbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/

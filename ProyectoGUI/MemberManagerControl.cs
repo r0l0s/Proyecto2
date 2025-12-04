@@ -38,8 +38,9 @@ namespace ProyectoGUI
             var Parents = Family.GetPossibleParents();
             foreach (string name in Parents)
             {
-                AncestorSelectorBox.Items.AddRange(name);
+                AncestorSelectorBox.Items.Add(name);
             }
+
         
             
         }
@@ -111,31 +112,77 @@ namespace ProyectoGUI
 
         private void CreateFamilyMemberButton_Click(object sender, EventArgs e)
         {
+            // Validaciones básicas
+            if (string.IsNullOrWhiteSpace(Member.Name))
+            {
+                MessageBox.Show("Ingrese un nombre para el miembro.");
+                return;
+            }
+
+            // Generar ID (ya lo hacés en UpdateInformation, por si acaso recalculamos)
+            Member.ID = Generator.GenerateID(Member.Age, Member.Location.Latitude, Member.Location.Longitude);
+
+            int parsedId;
+            try
+            {
+                parsedId = int.Parse(string.Join("", Member.ID));
+            }
+            catch
+            {
+                MessageBox.Show("Error generando la cédula del miembro.");
+                return;
+            }
+
             FamilyMember NewMember = new FamilyMember(
                 Member.Family,
                 Member.Name,
                 Member.DateOfBirth,
                 Member.Age,
                 Member.Location,
-                string.Join("", Member.ID),
+                parsedId,
                 Member.PhotoPath,
                 Member.isAlive,
                 Member.DateOfDeath
-                );
+            );
 
-            if (Family.Root == null) // Root
+            // Si no hay root, lo hacemos root
+            if (Family.Root == null)
             {
                 Family.AddRoot(NewMember);
             }
-                
-            else // Child
+            else
             {
+                // Necesitamos un parent válido para agregar un hijo
+                if (string.IsNullOrWhiteSpace(Member.Parent))
+                {
+                    MessageBox.Show("Seleccione un padre/madre para agregar este miembro.");
+                    return;
+                }
+
+                if (!Family.Members.ContainsKey(Member.Parent))
+                {
+                    MessageBox.Show("El padre seleccionado no existe en la familia.");
+                    return;
+                }
+
+                // Evitar duplicados por nombre
+                if (Family.Members.ContainsKey(NewMember.Name))
+                {
+                    MessageBox.Show("Ya existe un miembro con ese nombre en la familia.");
+                    return;
+                }
+
                 Family.Members.Add(NewMember.Name, NewMember);
+
+                // Asegurarse Children inicializada (ya la tenés con { get; set; } = new List...)
                 Family.Members[Member.Parent].Children.Add(NewMember);
             }
 
+            // Notificar para que MainForm recargue/actualice la vista de familia
             FamilyMemberCreated?.Invoke(Family);
         }
+
+
 
         private void NameTextBox_TextChanged(object sender, EventArgs e)
         {

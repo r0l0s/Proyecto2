@@ -11,12 +11,12 @@ namespace ProyectoGUI.Logica
         public DateTime? DateOfBirth { get; private set; }
         public int Age { get; private set; }
         public (double Latitude, double Longitude) Location { get; private set; }
-        public string ID { get; private set; }
+        public int ID { get; private set; }
         public string PhotoPath { get; private set; }
         public bool IsAlive { get; private set; }
         public DateTime? DateOfDeath { get; private set; }
 
-        public List<FamilyMember> Children = new List<FamilyMember>();
+        public List<FamilyMember> Children { get; set; } = new List<FamilyMember>();
         
 
         public FamilyMember(
@@ -25,7 +25,7 @@ namespace ProyectoGUI.Logica
             DateTime? dateOfBirth,
             int age,
             (double Latitude, double Longitude) location,
-            string id,
+            int Id,
             string photoPath,
             bool isAlive,
             DateTime? dateOfDeath
@@ -36,7 +36,7 @@ namespace ProyectoGUI.Logica
             DateOfBirth = dateOfBirth;
             Age = age;
             Location = location;
-            ID = id;
+            ID = Id;
             PhotoPath = photoPath;
             IsAlive = isAlive;
             DateOfDeath = dateOfDeath;

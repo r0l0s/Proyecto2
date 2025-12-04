@@ -13,8 +13,7 @@ namespace ProyectoGUI
     {
         public delegate void EnterFamilyConfigHandler(FamilyTree Family);
         public event EnterFamilyConfigHandler? EnterFamilyConfig;
-
-        private FamilyTree? CurrentFamSelection = null;
+        private Dictionary<string, FamilyTree> FamiliesDictionary = new Dictionary<string, FamilyTree>();        private FamilyTree? CurrentFamSelection = null;
 
         public FamilyDataControl()
         {
@@ -31,15 +30,27 @@ namespace ProyectoGUI
         }
         private void CreateFamilyButton_Click(object sender, EventArgs e)
         {
-            string FamilyName = FamilyNameTextBox.Text;
-            if (!string.IsNullOrEmpty(FamilyName))
+            string familyName = FamilyNameTextBox.Text;
+
+            if (string.IsNullOrWhiteSpace(familyName))
             {
-                FamilyTree NewFamily = new FamilyTree(FamilyName);
-                FamilyTreeContainer.Families.Add(FamilyName, NewFamily);
-                UpdateList();
+                MessageBox.Show("Debe ingresar un nombre para la familia.");
+                return;
             }
 
+            if (FamiliesDictionary.ContainsKey(familyName))
+            {
+                MessageBox.Show("Esta familia ya existe.");
+                return;
+            }
+
+            FamilyTree newFamily = new FamilyTree(familyName);
+
+            FamiliesDictionary.Add(familyName, newFamily);
+
+            AvailableFamiliesList.Items.Add(familyName);
         }
+
 
         private void RemoveFamilyButton_Click(object sender, EventArgs e)
         {
@@ -48,15 +59,48 @@ namespace ProyectoGUI
 
         private void FamilyConfigButton_Click(object sender, EventArgs e)
         {
-            //string? famName = AvailableFamiliesList.SelectedItem?.ToString();
-            EnterFamilyConfig?.Invoke(CurrentFamSelection!);
+            string? sel = AvailableFamiliesList.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(sel))
+            {
+                MessageBox.Show("Seleccione una familia primero.");
+                return;
+            }
 
+            if (!FamiliesDictionary.ContainsKey(sel))
+            {
+                MessageBox.Show("Familia no encontrada.");
+                return;
+            }
+
+            var family = FamiliesDictionary[sel];
+            CurrentFamSelection = family;
+            EnterFamilyConfig?.Invoke(family);
         }
+
 
         private void AvailableFamiliesList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string? selectedFamilyName = AvailableFamiliesList.SelectedItem?.ToString();
-            CurrentFamSelection = FamilyTreeContainer.Families[selectedFamilyName!];
+            if (AvailableFamiliesList.SelectedItem == null)
+                return;
+
+            string key = AvailableFamiliesList.SelectedItem.ToString();
+
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
+            if (!FamiliesDictionary.ContainsKey(key))
+            {
+                MessageBox.Show($"No se encontró la familia '{key}' en el diccionario.");
+                return;
+            }
+
+            var family = FamiliesDictionary[key];
+
+            CurrentFamSelection = family;   // ← ← ←  ESTA LÍNEA ARREGLA EL ERROR
+
+            EnterFamilyConfig?.Invoke(family);  
         }
+
+
     }
 }

@@ -19,19 +19,13 @@ namespace ProyectoGUI
         private FamilyTree Family;
         public FamilyManagerControl(FamilyTree family)
         {
+            if (family == null)
+                throw new ArgumentNullException(nameof(family));
+
             Family = family;
-            foreach(KeyValuePair<string,FamilyMember> kvp in Family.Members)
-            {
-                Debug.WriteLine($"{kvp.Key}");
-            }
-
-            
-
             InitializeComponent();
-
-            if (Family.Root != null)
-                PopulateTreeView(Family.Root);
         }
+
 
 
         private void PopulateTreeView(FamilyMember rootModel)
@@ -64,7 +58,15 @@ namespace ProyectoGUI
         private void FamilyManagerControl_Load(object sender, EventArgs e)
         {
             SelectedFamilyLabel.Text = $"Familia {Family.FamilyName}";
+
+            // Si ya existe un root, poblar el TreeView para mostrar miembros
+            FamilyTreeView.Nodes.Clear();
+            if (Family.Root != null)
+            {
+                PopulateTreeView(Family.Root);
+            }
         }
+
 
         private void AddMemberButton_Click(object sender, EventArgs e)
         {
@@ -83,7 +85,8 @@ namespace ProyectoGUI
 
         private void FamilyStatisticsButton_Click(object sender, EventArgs e)
         {
-            // View the family's statistics as per required
+            FamilyStatisticsForm statsForm = new FamilyStatisticsForm(Family);
+            statsForm.ShowDialog();
         }
 
 

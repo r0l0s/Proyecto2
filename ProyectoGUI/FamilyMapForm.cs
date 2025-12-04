@@ -1,26 +1,31 @@
-using System;
-using System.Drawing;
-using System.Windows.Forms;
 using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using ProyectoGUI.Logica;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ProyectoGUI
 {
     public partial class FamilyMapForm : Form
     {
-        private FamilyTree Family;
         private GMapControl MapControl;
-        private GMapOverlay MarkersOverlay;
+        private GMapOverlay Overlay;
+        private FamilyTree Family;
+        private GeographicGraph Graph;
 
         public FamilyMapForm(FamilyTree family)
         {
-            Family = family;
+            Family = family ?? throw new ArgumentNullException(nameof(family));
+            Graph = new GeographicGraph();
+
             InitializeComponent();
-            InitializeMap();
-            LoadFamilyMarkers();
+            SetupMap();
+            LoadFamilyMembers();
         }
 
         private void InitializeComponent()
@@ -31,105 +36,78 @@ namespace ProyectoGUI
             // MapControl
             // 
             this.MapControl.Dock = DockStyle.Fill;
-            this.MapControl.Bearing = 0F;
-            this.MapControl.CanDragMap = true;
-            this.MapControl.EmptyTileColor = Color.Navy;
-            this.MapControl.GrayScaleMode = false;
-            this.MapControl.HelperLineOption = HelperLineOptions.DontShow;
-            this.MapControl.MarkersEnabled = true;
-            this.MapControl.MaxZoom = 24;
             this.MapControl.MinZoom = 0;
-            this.MapControl.MouseWheelZoomEnabled = true;
-            this.MapControl.MouseWheelZoomType = MouseWheelZoomType.MousePositionAndCenter;
-            this.MapControl.NegativeMode = false;
-            this.MapControl.PolygonsEnabled = true;
-            this.MapControl.RetryLoadTile = 0;
-            this.MapControl.RoutesEnabled = true;
-            this.MapControl.ShowTileGridLines = false;
-            this.MapControl.Zoom = 5D;
+            this.MapControl.MaxZoom = 24;
+            this.MapControl.Zoom = 2;
+            this.MapControl.MapProvider = GMapProviders.GoogleMap;
+            this.MapControl.Position = new PointLatLng(0, 0);
+            this.MapControl.ShowCenter = false;
+            this.Controls.Add(this.MapControl);
             // 
             // FamilyMapForm
             // 
-            this.ClientSize = new System.Drawing.Size(800, 600);
-            this.Controls.Add(this.MapControl);
-            this.Text = $"Mapa de la familia {Family.FamilyName}";
+            this.ClientSize = new Size(1000, 600);
+            this.Text = $"Mapa de la Familia {Family.FamilyName}";
             this.ResumeLayout(false);
         }
 
-        private void InitializeMap()
+        private void SetupMap()
         {
-            GMaps.Instance.Mode = AccessMode.ServerAndCache;
-            MapControl.MapProvider = GoogleMapProvider.Instance;
-            MapControl.Position = new PointLatLng(20.0, 0.0); // Centro inicial
-            MapControl.Zoom = 2;
-            MarkersOverlay = new GMapOverlay("familyMarkers");
-            MapControl.Overlays.Add(MarkersOverlay);
+            Overlay = new GMapOverlay("familyOverlay");
+            MapControl.Overlays.Add(Overlay);
+            MapControl.DragButton = MouseButtons.Left;
         }
 
-        private void LoadFamilyMarkers()
+        private void LoadFamilyMembers()
         {
-            foreach (var member in Family.Members.Values)
+            // Agregar miembros al grafo
+            if (Family.Root != null) Graph.AddMember(Family.Root);
+            foreach (var kv in Family.Members)
+                Graph.AddMember(kv.Value);
+
+            // Añadir marcadores con foto de cada miembro
+            foreach (var member in Graph.GetAllMembers())
             {
-                AddMemberMarker(member);
+                if (!File.Exists(member.PhotoPath)) continue;
+
+                Bitmap original = new Bitmap(member.PhotoPath);
+                Bitmap resized = new Bitmap(original, new Size(50, 50)); // tamaño razonable
+                Bitmap circle = MakeCircularImage(resized);
+
+                GMapMarker marker = new GMarkerGoogle(new PointLatLng(member.Location.Latitude, member.Location.Longitude), circle);
+                marker.Tag = member; // guardar referencia
+
+                Overlay.Markers.Add(marker);
             }
 
-            if (Family.Root != null)
-            {
-                AddMemberMarker(Family.Root);
-            }
+            MapControl.ZoomAndCenterMarkers("familyOverlay");
 
-            // Ajustar la vista para que incluya todos los marcadores
-            if (MarkersOverlay.Markers.Count > 0)
+            // Evento click de los marcadores
+            MapControl.OnMarkerClick += MapControl_OnMarkerClick;
+        }
+
+        private void MapControl_OnMarkerClick(GMapMarker item, MouseEventArgs e)
+        {
+            if (item.Tag is FamilyMember member)
             {
-                MapControl.SetZoomToFitRect(GetBounds());
+                // Abrir ventana con distancias
+                MemberDistanceForm distanceForm = new MemberDistanceForm(member, Graph);
+                distanceForm.ShowDialog();
             }
         }
 
-        private void AddMemberMarker(FamilyMember member)
+        private Bitmap MakeCircularImage(Bitmap src)
         {
-            PointLatLng point = new PointLatLng(member.Location.Latitude, member.Location.Longitude);
-
-            Bitmap bmp;
-            if (!string.IsNullOrEmpty(member.PhotoPath) && System.IO.File.Exists(member.PhotoPath))
+            Bitmap dest = new Bitmap(src.Width, src.Height);
+            using (Graphics g = Graphics.FromImage(dest))
             {
-                bmp = new Bitmap(member.PhotoPath);
-            }
-            else
-            {
-                bmp = new Bitmap(40, 40);
-                using (Graphics g = Graphics.FromImage(bmp))
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (Brush brush = new TextureBrush(src))
                 {
-                    g.Clear(Color.Gray);
+                    g.FillEllipse(brush, 0, 0, src.Width, src.Height);
                 }
             }
-
-            // Redimensionar la imagen para que no sea demasiado grande
-            Bitmap smallBmp = new Bitmap(bmp, new Size(40, 40));
-            GMarkerGoogle marker = new GMarkerGoogle(point, smallBmp)
-            {
-                ToolTipText = member.Name,
-                ToolTipMode = MarkerTooltipMode.Always
-            };
-
-            MarkersOverlay.Markers.Add(marker);
-        }
-
-        private RectLatLng GetBounds()
-        {
-            double minLat = double.MaxValue;
-            double maxLat = double.MinValue;
-            double minLng = double.MaxValue;
-            double maxLng = double.MinValue;
-
-            foreach (var m in MarkersOverlay.Markers)
-            {
-                if (m.Position.Lat < minLat) minLat = m.Position.Lat;
-                if (m.Position.Lat > maxLat) maxLat = m.Position.Lat;
-                if (m.Position.Lng < minLng) minLng = m.Position.Lng;
-                if (m.Position.Lng > maxLng) maxLng = m.Position.Lng;
-            }
-
-            return new RectLatLng(maxLat, minLng, maxLng - minLng, maxLat - minLat);
+            return dest;
         }
     }
 }

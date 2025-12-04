@@ -75,7 +75,8 @@ namespace ProyectoGUI
 
         private void ViewMapButton_Click(object sender, EventArgs e)
         {
-            // Enter the world map to view graphs
+            FamilyMapForm mapForm = new FamilyMapForm(Family);
+            mapForm.ShowDialog();
         }
 
         private void FamilyTreeButton_Click(object sender, EventArgs e)
